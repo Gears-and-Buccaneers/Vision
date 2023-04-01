@@ -54,14 +54,14 @@ def process(frame):
 		cv.circle(frame, (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), 7, (0, 255, 0), -1)
 
 		for point in hull:
-			if left is None or point[0] < left[0]:
-				left = point
-			if right is None or point[0] > right[0]:
-				right = point
-			if up is None or point[1] < up[1]:
-				up = point
-			if down is None or point[1] > down[1]:
-				down = point
+			if left is None or point[0, 0] < left[0]:
+				left = point[0]
+			if right is None or point[0, 0] > right[0]:
+				right = point[0]
+			if up is None or point[0, 1] < up[1]:
+				up = point[0]
+			if down is None or point[0, 1] > down[1]:
+				down = point[0]
 
 		cv.drawMarker(frame, left, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
 		cv.drawMarker(frame, right, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
