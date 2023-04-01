@@ -41,9 +41,12 @@ def process(frame):
 
 		rect = np.array(cv.boundingRect(contour)).astype(np.int32)
 		hull = cv.convexHull(contour)
+		hullApprox = cv.approxPolyDP(hull, 0.01 * cv.arcLength(hull, True), True)
+
 
 		cv.drawContours(frame, [contour], -1, (0, 255, 255), 2)
 		cv.drawContours(frame, [hull], -1, (255, 0, 0), 2)
+		cv.drawContours(frame, [hullApprox], -1, (0, 0, 255), 2)
 		cv.rectangle(frame, (rect[0], rect[1]), (rect[0]+rect[2], rect[1]+rect[3]), (0, 255, 0), 2)
 
 		if M['m00'] != 0:
@@ -52,6 +55,7 @@ def process(frame):
 			cv.circle(frame, (cx, cy), 7, (0, 255, 255), -1)
 
 		cv.circle(frame, (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), 7, (0, 255, 0), -1)
+		
 
 
 		# for point in contour:
