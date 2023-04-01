@@ -40,12 +40,10 @@ def process(frame):
 		M = cv.moments(contour)
 
 		rect = np.array(cv.boundingRect(contour)).astype(np.int32)
-		rRect = cv.boxPoints(cv.minAreaRect(contour)).astype(np.int32)
 		hull = cv.convexHull(contour)
 
 		cv.drawContours(frame, [contour], -1, (0, 255, 255), 2)
 		cv.drawContours(frame, [hull], -1, (255, 0, 0), 2)
-		cv.drawContours(frame, [rRect], -1, (0, 0, 255), 2)
 		cv.rectangle(frame, (rect[0], rect[1]), (rect[0]+rect[2], rect[1]+rect[3]), (0, 255, 0), 2)
 
 		if M['m00'] != 0:
@@ -53,7 +51,6 @@ def process(frame):
 			cy = int(M['m01']/M['m00'])
 			cv.circle(frame, (cx, cy), 7, (0, 255, 255), -1)
 
-		cv.circle(frame, rRect.mean(axis=0).astype(np.int32), 7, (0, 0, 255), -1)
 		cv.circle(frame, (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), 7, (0, 255, 0), -1)
 
 
