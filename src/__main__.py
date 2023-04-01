@@ -37,23 +37,13 @@ def process(frame):
 			contour = c
 
 	if contour is not None:
+		left = right = down = up = None
 
 		rect = np.array(cv.boundingRect(contour)).astype(np.int32)
 		hull = cv.convexHull(contour)
-		hullApprox = cv.approxPolyDP(hull, 0.05 * cv.arcLength(hull, True), True)
 
-
-		cv.drawContours(frame, [contour], -1, (0, 255, 255), 2)
 		cv.drawContours(frame, [hull], -1, (255, 0, 0), 2)
-		cv.drawContours(frame, [hullApprox], -1, (0, 0, 255), 2)
 		cv.rectangle(frame, (rect[0], rect[1]), (rect[0]+rect[2], rect[1]+rect[3]), (0, 255, 0), 2)
-
-		M = cv.moments(contour)
-		if M['m00'] != 0:
-			cx = int(M['m10']/M['m00'])
-			cy = int(M['m01']/M['m00'])
-			cv.circle(frame, (cx, cy), 7, (0, 255, 255), -1)
-
 
 		M = cv.moments(hull)
 		if M['m00'] != 0:
@@ -63,22 +53,20 @@ def process(frame):
 
 		cv.circle(frame, (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), 7, (0, 255, 0), -1)
 
+		for point in hull:
+			if left is None or point[0, 0] < left[0]:
+				left = point
+			if right is None or point[0] > right[0]:
+				right = point
+			if up is None or point[1] < up[1]:
+				up = point
+			if down is None or point[1] > down[1]:
+				down = point
 
-
-		# for point in contour:
-		# 	if left is None or point[0, 0] < left[0]:
-		# 		left = point
-		# 	if right is None or point[0] > right[0]:
-		# 		right = point
-		# 	if up is None or point[1] < up[1]:
-		# 		up = point
-		# 	if down is None or point[1] > down[1]:
-		# 		down = point
-
-		# cv.drawMarker(frame, left, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
-		# cv.drawMarker(frame, right, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
-		# cv.drawMarker(frame, up, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
-		# cv.drawMarker(frame, down, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
+		cv.drawMarker(frame, left, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
+		cv.drawMarker(frame, right, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
+		cv.drawMarker(frame, up, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
+		cv.drawMarker(frame, down, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
 
 		# x = np.average(contour, 0)[0]
 		# a = x / len(frame[0]) * 2 - 1
