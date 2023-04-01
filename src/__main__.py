@@ -14,11 +14,6 @@ CUBE_COLOR_UPPER = np.array([135, 255, 255])
 
 CUBE_RADIUS_MIN = 40
 
-def mouseHandler(event, x, y, flags, param):
-	if event == cv.EVENT_LBUTTONDOWN and hsv is not None:
-	 	 print(hsv[y, x])
-
-
 def process(frame):
 	hsv = cv.cvtColor(frame, cv.COLOR_BGR2HSV)
 
@@ -94,30 +89,33 @@ def process(frame):
 
 	cv.imshow('img', frame)
 
-img = cv.imread("C:\\Users\\deven\\Pictures\\Camera Roll\\WIN_20230401_15_01_07_Pro.jpg")
 
-process(img)
+def mouseHandler(event, x, y, flags, param):
+	if event == cv.EVENT_LBUTTONDOWN and hsv is not None:
+	 	 print(hsv[y, x])
+
+cv.namedWindow('img')
+cv.setMouseCallback('img', mouseHandler)
 
 
-cv.waitKey(0)
+if False:
+	img = cv.imread("C:\\Users\\deven\\Pictures\\Camera Roll\\WIN_20230401_15_01_07_Pro.jpg")
+	process(img)
+	cv.waitKey(0)
+else:
+	cap = cv.VideoCapture(0)
 
-# cap = cv.VideoCapture(0)
+	if not cap.isOpened():
+		print("Cannot open camera")
+		exit()
 
-# if not cap.isOpened():
-# 	print("Cannot open camera")
-# 	exit()
 
-# cv.namedWindow('img')
+	while True:
+		_, frame = cap.read()
+		process(frame)
+		if cv.waitKey(1) & 0xFF == ord('q'):
+			break
 
-# cv.setMouseCallback('img', mouseHandler)
+	cap.release()
 
-# while True:
-# 	_, frame = cap.read()
-
-# 	process(frame)
-
-# 	if cv.waitKey(1) & 0xFF == ord('q'):
-# 		break
-
-# cap.release()
-# cv.destroyAllWindows()
+cv.destroyAllWindows()
