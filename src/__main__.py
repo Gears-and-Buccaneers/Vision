@@ -54,7 +54,7 @@ def process(frame):
 		cv.circle(frame, (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), 7, (0, 255, 0), -1)
 
 		for point in hull:
-			if left is None or point[0, 0] < left[0]:
+			if left is None or point[0] < left[0]:
 				left = point
 			if right is None or point[0] > right[0]:
 				right = point
