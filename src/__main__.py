@@ -1,8 +1,13 @@
 import cv2 as cv
 import numpy as np
+import ntcore
 
+nt = ntcore.NetworkTableInstance.getDefault()
 
-# conePosPublisher = ntcore.NetworkTableInstance.getDefault().getDoubleTopic("vision/conePos").publish()
+coneX = nt.getDoubleTopic("vision/coneX").publish()
+coneY = nt.getDoubleTopic("vision/coneY").publish()
+coneCenter = nt.getDoubleTopic("vision/coneCenter").publish()
+
 
 hsv = None
 
@@ -26,11 +31,8 @@ def process(frame):
 		cube_mask, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 
 	cv.drawContours(frame, cube_contours, -1, (255, 0, 255), 5)
-	# cv.drawContours(frame, cone_contours, -1, (0, 255, 255), 5)
 
 	contour = None
-
-
 
 	for c in cone_contours:
 		if contour is None or len(contour) < len(c):
@@ -39,21 +41,9 @@ def process(frame):
 	if contour is not None:
 		left = right = down = up = None
 
-		rect = np.array(cv.boundingRect(contour)).astype(np.int32)
-		hull = cv.convexHull(contour)
+		cv.drawContours(frame, [contour], -1, (255, 0, 0), 2)
 
-		cv.drawContours(frame, [hull], -1, (255, 0, 0), 2)
-		cv.rectangle(frame, (rect[0], rect[1]), (rect[0]+rect[2], rect[1]+rect[3]), (0, 255, 0), 2)
-
-		M = cv.moments(hull)
-		if M['m00'] != 0:
-			cx = int(M['m10']/M['m00'])
-			cy = int(M['m01']/M['m00'])
-			cv.circle(frame, (cx, cy), 7, (255, 0, 0), -1)
-
-		cv.circle(frame, (int(rect[0] + rect[2] / 2), int(rect[1] + rect[3] / 2)), 7, (0, 255, 0), -1)
-
-		for point in hull:
+		for point in contour:
 			if left is None or point[0, 0] < left[0]:
 				left = point[0]
 			if right is None or point[0, 0] > right[0]:
@@ -63,15 +53,21 @@ def process(frame):
 			if down is None or point[0, 1] > down[1]:
 				down = point[0]
 
+
+		x = (left[0] + right[0]) / 2
+		y = (up[1] + down[1]) / 2
+
+		cv.rectangle(frame, (left[0], up[1]), (right[0], down[1]), (0, 255, 0), 2)
+		cv.circle(frame, (int(x), int(y)), 7, (0, 255, 0), -1)
+
 		cv.drawMarker(frame, left, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
 		cv.drawMarker(frame, right, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
 		cv.drawMarker(frame, up, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
 		cv.drawMarker(frame, down, (0, 255, 0), cv.MARKER_CROSS, 50, 2)
 
-		# x = np.average(contour, 0)[0]
-		# a = x / len(frame[0]) * 2 - 1
-		# cv.line(frame, (int(x), 0), (int(x), len(frame)), (0, 0, 255), 5)
-		# conePosPublisher.set(a)
+		coneX.set(x / frame.shape[1])
+		coneY.set(y / frame.shape[0])
+		coneCenter.set((down[0] - left[0]) / (right[0] - left[0]))
 
 	for contour in cube_contours:
 		rect = cv.minAreaRect(contour)
@@ -95,24 +91,18 @@ cv.namedWindow('img')
 cv.setMouseCallback('img', mouseHandler)
 
 
-if False:
-	img = cv.imread("C:\\Users\\deven\\Pictures\\Camera Roll\\WIN_20230401_15_01_07_Pro.jpg")
-	process(img)
-	cv.waitKey(0)
-else:
-	cap = cv.VideoCapture(0)
+cap = cv.VideoCapture(0)
 
-	if not cap.isOpened():
-		print("Cannot open camera")
-		exit()
+if not cap.isOpened():
+	print("Cannot open camera")
+	exit()
 
 
-	while True:
-		_, frame = cap.read()
-		process(frame)
-		if cv.waitKey(1) & 0xFF == ord('q'):
-			break
+while True:
+	_, frame = cap.read()
+	process(frame)
+	if cv.waitKey(1) & 0xFF == ord('q'):
+		break
 
-	cap.release()
-
+cap.release()
 cv.destroyAllWindows()
